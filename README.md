@@ -1,5 +1,5 @@
 # power_query_version_control
-/n
+
 
 ### Version Control:
   Centralized power query language scripts that serve as expressions for multiple Power BI and Excel Reports.
