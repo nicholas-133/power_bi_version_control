@@ -32,12 +32,12 @@ Table.AddColumn(SourceTable, "ChargedCostCenter", each let
         /* All Support Actuals from CC316 Charged to CC 316 to be charged back to CC 316 */
         ( [TimeType] = "Product" or [TimeType] = "Cost Center" ) and [WorkCC] = "316" and [RawChargedCostCenter] = "316" ,
 
-        /* Single out Ta'Seanna Bell and Kristin Brandt for billing */
-        ( [TimeType] = "Product" or [TimeType] = "Cost Center" ) and [WorkCC] = "316" and [ResourceName] = "Ta'Seanna Bell" and [RawChargedCostCenter] <> "315" and [RawChargedCostCenter] <> "316" ,
-        ( [TimeType] = "Product" or [TimeType] = "Cost Center" ) and [WorkCC] = "316" and [ResourceName] = "Kristin Brandt" and [RawChargedCostCenter] <> "315" and [RawChargedCostCenter] <> "316" ,
+        /* Single out Michael Scott and Dwight Schrute for billing */
+        ( [TimeType] = "Product" or [TimeType] = "Cost Center" ) and [WorkCC] = "316" and [ResourceName] = "Michael Scott" and [RawChargedCostCenter] <> "315" and [RawChargedCostCenter] <> "316" ,
+        ( [TimeType] = "Product" or [TimeType] = "Cost Center" ) and [WorkCC] = "316" and [ResourceName] = "Dwight Schrute" and [RawChargedCostCenter] <> "315" and [RawChargedCostCenter] <> "316" ,
 
-        /* Single out Varun Kumar Sevalla for billing */
-        ( [TimeType] = "Product" or [TimeType] = "Cost Center" ) and [WorkCC] = "316" and [ResourceName] = "Varun Kumar Sevella" and [RawChargedCostCenter] <> "315" and [RawChargedCostCenter] <> "316",
+        /* Single out John Smith for billing */
+        ( [TimeType] = "Product" or [TimeType] = "Cost Center" ) and [WorkCC] = "316" and [ResourceName] = "John Smith" and [RawChargedCostCenter] <> "315" and [RawChargedCostCenter] <> "316",
 
         /* The rest of the contractors non-315 & non-316 Support Amounts to be Charged to CC 310 */
         ( [TimeType] = "Product" or [TimeType] = "Cost Center" ) and [WorkCC] = "316" and [RawChargedCostCenter] <> "315" and [RawChargedCostCenter] <> "316" ,
@@ -71,11 +71,11 @@ Table.AddColumn(SourceTable, "ChargedCostCenter", each let
         /* All Support Actuals from CC316 Charged to CC 316 to be charged back to CC 316 */
         RawChargedCostCenter ,
 
-        /* Single out Ta'Seanna Bell and Kristin Brandt for billing */
+        /* Single out Michael Scott and Dwight Schrute for billing */
         "326" ,
         "326" ,
                 
-        /* Single out Varun Kumar Sevalla for billing */
+        /* Single out John Smith for billing */
         "310" ,
 
         /* The rest of the contractors non-315 & non-316 Support Amounts to be Charged to CC 310 */
