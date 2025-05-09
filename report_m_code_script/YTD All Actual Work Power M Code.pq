@@ -1,5 +1,15 @@
 
-```powerquery
+/*
+=====================================================================================
+   YTD All Actual Work Report M Code for the TimesheetLineActualDataSet Fact Table   
+=====================================================================================
+
+Below is the M Code for the main fact table that IT untilizes for Cost Reports and Time Tracking. 
+
+Refer to the Noted Steps #"Added ObjectCodeDesc" and #"Added ChargedCostCenter" which references the two .txt files from the source folder. 
+    In our environment, these .txt files are stored in SharePoint. These two steps are shared with other Power BI and Excel Reports.
+
+*/
 
 let
     Source = OData.Feed("https://tasb.sharepoint.com/sites/pwa/_api/Projectdata", null, [Implementation="2.0"]),
@@ -85,8 +95,16 @@ let
 
     /* Added a calculated column named [RawCostCenter] that retrieves the [TaskCostCenter] unless null, then it retrieves the [ProjectCostCenter] -- essentially this is the cost center that the work is directed at but not always charged to. */
     #"Added RawChargedCostCenter" = Table.AddColumn(#"Changed Rate to Decimal", "RawChargedCostCenter", each if [TaskCostCenter] is null then [ProjectCostCenter] else [TaskCostCenter]),
-    /* Added a calculated column named [ChargedCostCenter], which is the cost center that the work is actually charged to. This is calculated with the conditions below for [WorkCC], [ResourceName], and [RawCostCenter] 
-    IMPORTANT: This one of the most date sensitive steps and it needs to be monitor frequently as this will need changes when new timesheet users are added, relevant Cost Centers change, or when the chargeback model changes*/
+
+    /*
+    =====================================================================
+    Formula that references ChargedCostCenterCalculation .txt file below
+    =====================================================================
+
+    Added a calculated column named [ChargedCostCenter], which is the cost center that the work is actually charged to. This is calculated with the conditions below for [WorkCC], [ResourceName], and [RawCostCenter] 
+    
+    IMPORTANT: This one of the most date sensitive steps and it needs to be monitor frequently as this will need changes when new timesheet users are added, relevant Cost Centers change, or when the chargeback model changes
+    */
     #"Added ChargedCostCenter" = Expression.Evaluate(ChargedCostCenterCalculation, 
         [
             /* Setting References for Expression.Evaluate to work within the appropriate context */ 
@@ -95,6 +113,7 @@ let
             #"List.PositionOf" = List.PositionOf
         ]
         ),
+
     /* Filtered out Non-Billable Charged CC's since this is a Cost Report for Finance */
     #"Filtered Billable CC's" = Table.SelectRows(#"Added ChargedCostCenter", each ([ChargedCostCenter] <> "776" and [ChargedCostCenter] <> "777")),
 
@@ -116,6 +135,12 @@ let
     /* Removes columns no longer needed. We want to limit the columns to only the ones we need. IMPORTANT: There are necessary calculated DAX columns that are performed in the Data Model once loaded*/    
     #"Removed Columns No Longer Needed" = Table.RemoveColumns(#"Added Product",{"AssignmentActualCost", "ResourceCostCenter1", "ITProduct", "TaskProduct", "StartDate", "EndDate", "Correct CC & Rate", "ResourceId", "ProjectId", "TaskId", "RawChargedCostCenter"}),
     #"Filtered 0 ActualCost" = Table.SelectRows(#"Removed Columns No Longer Needed", each ([ActualCost] <> 0)),
+
+    /*
+    ==============================================================
+    Formula that references ObjectCodeCalculation .txt file below
+    ==============================================================
+    */
     #"Added ObjectCodeDesc" = Expression.Evaluate(ObjectCodeCalculation, 
         [
             /* Setting References for Expression.Evaluate to work within the appropriate context */ 
@@ -124,7 +149,9 @@ let
             #"List.PositionOf" = List.PositionOf
         ]
         ),
+
     #"Added ObjectCode" = Table.AddColumn(#"Added ObjectCodeDesc", "ObjectCode", each Text.Start([ObjectCodeDesc], 5))
+
 in
     #"Added ObjectCode"
-```
+
