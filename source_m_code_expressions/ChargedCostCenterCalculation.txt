@@ -1,0 +1,97 @@
+
+
+/* IMPORTANT this logic does not work the same as else if since the else if works in order */
+
+Table.AddColumn(SourceTable, "ChargedCostCenter", each let
+
+    /* -- VARIABLES START HERE -- */
+    NonBillable = "777" ,
+    CME_NonBillable = "776" ,
+    RawChargedCostCenter = [RawChargedCostCenter] ,
+
+    /* -- CONDITIONS START HERE -- */
+    Conditions = {
+        /* CC 310 and CC 326 does not bill itself back; Replace as non billable */
+        ( [WorkCC] = "310" or [WorkCC] = "326" ) and ( RawChargedCostCenter = "310" or RawChargedCostCenter = "326" ) , 
+
+        /* Any Charges that are "Support" from CME label as CME_Non-Billable */
+        ( [TimeType] = "Product" or [TimeType] = "Cost Center" or [TimeType] = "Support" ) and [WorkCC] = "300" ,
+        ( [TimeType] = "Product" or [TimeType] = "Cost Center" or [TimeType] = "Support" ) and [WorkCC] = "510" ,
+        ( [TimeType] = "Product" or [TimeType] = "Cost Center" or [TimeType] = "Support" ) and [WorkCC] = "512" ,
+        ( [TimeType] = "Product" or [TimeType] = "Cost Center" or [TimeType] = "Support" ) and [WorkCC] = "513" ,
+        ( [TimeType] = "Product" or [TimeType] = "Cost Center" or [TimeType] = "Support" ) and [WorkCC] = "515" ,
+        ( [TimeType] = "Product" or [TimeType] = "Cost Center" or [TimeType] = "Support" ) and [WorkCC] = "516" ,
+        ( [TimeType] = "Product" or [TimeType] = "Cost Center" or [TimeType] = "Support" ) and [WorkCC] = "550" , 
+
+        /* Any Charges that are not "Product" or "Cost Center" use the [RawChargedCostCenter] */
+        [TimeType] <> "Product" and [TimeType] <> "Cost Center" , 
+
+        /* All Support Actuals from CC316 charged to CC315 to be included */
+        ( [TimeType] = "Product" or [TimeType] = "Cost Center" ) and [WorkCC] = "316" and [RawChargedCostCenter] = "315" ,
+
+        /* All Support Actuals from CC316 Charged to CC 316 to be charged back to CC 316 */
+        ( [TimeType] = "Product" or [TimeType] = "Cost Center" ) and [WorkCC] = "316" and [RawChargedCostCenter] = "316" ,
+
+        /* Single out Ta'Seanna Bell and Kristin Brandt for billing */
+        ( [TimeType] = "Product" or [TimeType] = "Cost Center" ) and [WorkCC] = "316" and [ResourceName] = "Ta'Seanna Bell" and [RawChargedCostCenter] <> "315" and [RawChargedCostCenter] <> "316" ,
+        ( [TimeType] = "Product" or [TimeType] = "Cost Center" ) and [WorkCC] = "316" and [ResourceName] = "Kristin Brandt" and [RawChargedCostCenter] <> "315" and [RawChargedCostCenter] <> "316" ,
+
+        /* Single out Varun Kumar Sevalla for billing */
+        ( [TimeType] = "Product" or [TimeType] = "Cost Center" ) and [WorkCC] = "316" and [ResourceName] = "Varun Kumar Sevella" and [RawChargedCostCenter] <> "315" and [RawChargedCostCenter] <> "316",
+
+        /* The rest of the contractors non-315 & non-316 Support Amounts to be Charged to CC 310 */
+        ( [TimeType] = "Product" or [TimeType] = "Cost Center" ) and [WorkCC] = "316" and [RawChargedCostCenter] <> "315" and [RawChargedCostCenter] <> "316" ,
+
+        /* Other IT Product or Cost Center Support to be classified as Fixed Fee which is Non-Billable (777) */
+        ( [TimeType] = "Product" or [TimeType] = "Cost Center" ) and ( [WorkCC] = "310" or [WorkCC] = "326" )
+
+        /* There shouldn't be no ChargedCostCenters unaccounted for at this point -- Unless Changes are made*/
+    } ,
+
+    /* -- RESULTS START HERE -- */
+    Results = {
+        /* CC 310 and CC 326 does not bill itself back; Replace as non billable */
+        NonBillable ,
+
+        /* Any Charges that are "Support" from CME label as CME_Non-Billable */
+        CME_NonBillable , 
+        CME_NonBillable , 
+        CME_NonBillable ,
+        CME_NonBillable ,
+        CME_NonBillable ,
+        CME_NonBillable ,
+        CME_NonBillable ,
+
+        /* Any Charges that are not "Product" or "Cost Center" use the [RawChargedCostCenter] */
+        RawChargedCostCenter ,
+
+        /* All Support Actuals from CC316 charged to CC315 to be included */
+        RawChargedCostCenter ,
+
+        /* All Support Actuals from CC316 Charged to CC 316 to be charged back to CC 316 */
+        RawChargedCostCenter ,
+
+        /* Single out Ta'Seanna Bell and Kristin Brandt for billing */
+        "326" ,
+        "326" ,
+                
+        /* Single out Varun Kumar Sevalla for billing */
+        "310" ,
+
+        /* The rest of the contractors non-315 & non-316 Support Amounts to be Charged to CC 310 */
+        "310" ,
+
+        /* Other IT Product or Cost Center Support to be classified as Fixed Fee which is Non-Billable (777) */
+        NonBillable
+
+    /* There shouldn't be no ChargedCostCenters unaccounted for at this point -- Unless Changes are made*/
+    }
+    
+in    
+    /* Take the result in the Results list that shares the same position based on the "True" position of the Conditions List if not an error */
+    try Results{List.PositionOf(Conditions, true)}
+
+    /* Set to null if it is an error */
+    /* errors should be the result for Non-Billable hours, Admin hours, Etc.. */
+    otherwise null
+)

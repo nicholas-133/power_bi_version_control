@@ -1,0 +1,260 @@
+/* 
+PURPOSE:
+    Version Control:
+    This is the m code that all cost Reports Reference in order to generate object codes per row context. This ObjectCodeDesc Calculator that can be modified here to apply to all Reports.
+    I included error results when there should be no costs associated with that condition (Please Refer to the IMPORTANT statement as it will show you how to keep this code from breaking).
+
+    What you should be modifying:
+    If an ObjectCodeDesc changes, then you should apply the appropriate change to the Results = {} list.
+    If the condition of a ObjectCodeDesc changes, then you should apply the appropriate change to the Conditions = {} list.
+
+HOW IT WORKS:
+    I created two lists below: One for writing the condition ( Conditions = {} ) and the other for the result ( Results = {} ) of that condition. 
+    1. Per each row, the code run through each condition and marks it as True or False if that condition is satisfied for that row.
+    2. Then it will find the #'d position of that "True" and match it with the position in the Results = {} list; This will give the corresponding result (so long as the code is correct). 
+        I included a declaration of variables so the object code can be easily modifiable and reduce errors.
+
+    IMPORTANT: The position of the condition within the Conditions list {} should be the exact same position as the result in the Results list {}.
+        The `Results{List.PositionOf(Conditions, true)}` function will take position of the True condition within the Conditions list {} and call the result of the same position in the Results list {}.
+
+    The code below is trimmed in a way that allows for the Power Query Editor to utitlize the Evaluate.Expression() function. This function references a .txt and evaluates it as an expression.
+    
+CONTEXT REQUIREMENTS FOR THE Expression.Evaluate FUNCTION:
+    Within the Power Query Editor, There are context requirements in order for the Evaluate.Expression() function to run appropriately.
+    Below in the brackets [] is the labeled context we need. This simply allows Power Query Editor to untilize the specified Global Functions within the Evaluate.Expression() function. 
+    NOTE: #shared is a context used for referencing ALL Global Functions, however there are some functions that do not work in the Power BI Webservice and will cause the refresh to break;
+               That is why we only label the functions we need in the context.
+                    ...
+                    #"Add ObjectCodeDesc" = Expression.Evaluate(ObjectCodeExpression, 
+                        [
+                            #"TableSource" = #"Removed Columns No Longer Needed", 
+                            #"Table.AddColumn" = Table.AddColumn,
+                            #"List.PositionOf" = List.PositionOf
+                        ]
+                        )
+                    ... 
+*/  
+
+/* EXPRESSION STARTS HERE */
+Table.AddColumn(SourceTable, "ObjectCodeDesc", each let
+        
+        /* -- VARIABLES START HERE -- */
+        InternalCap = "15450 Cap",
+        InternalSaaS = "14405 SaaS",
+        InternalProjectExp = "90130 Proj.",
+        InternalSupport = "90140 Supp.",
+
+        DXExpense = "90160 Expense",
+        MediaSrvcsSupport = "90170 Supp.",
+
+        ContractorCap = "15400 Ext. Cap",
+        ContractorSaaS = "14400 Ext. SaaS",
+        ContractorProjectExp = "61220 Ext. Proj.",
+        ContractorSupport = "61221 Ext. Supp.",
+
+        VendorCap = "15400-1 Vendor Cap",
+        VendorSaaS = "14400-1 Vendor SaaS",
+        VendorProjectExp = "61220-1 Vendor Proj.",
+
+        /* -- CONDITIONS LIST STARTS HERE -- */
+        Conditions = 
+        {  
+            /* TIMESHEET USER RESOURCES */
+                /*  Timesheet User Resources include Internal Resources and Contractors that input time in PWA. 
+                    These should always be assigned a Working Cost Center [WorkCC]. 
+                    Some of these conditions are not classified as chargebacks and will therefor have a corresponding value "xxx Error" in the Results list. */
+
+            /* SaaS */
+            [TimeType] = "Project" and [CapProject] = "SaaS" and [CapTask] = "Yes" and [WorkCC] = "310", 
+            [TimeType] = "Project" and [CapProject] = "SaaS" and [CapTask] = "Yes" and [WorkCC] = "326", 
+            [TimeType] = "Project" and [CapProject] = "SaaS" and [CapTask] = "Yes" and [WorkCC] = "356", 
+            [TimeType] = "Project" and [CapProject] = "SaaS" and [CapTask] = "Yes" and [WorkCC] = "357", 
+            [TimeType] = "Project" and [CapProject] = "SaaS" and [CapTask] = "Yes" and [WorkCC] = "516",
+            [TimeType] = "Project" and [CapProject] = "SaaS" and [CapTask] = "Yes" and [WorkCC] = "550",
+            [TimeType] = "Project" and [CapProject] = "SaaS" and [CapTask] = "Yes" and [WorkCC] = "198",
+            /* Contractor SaaS */
+            [TimeType] = "Project" and [CapProject] = "SaaS" and [CapTask] = "Yes" and [WorkCC] = "316",
+
+            /* SaaS Expense */
+            [TimeType] = "Project" and [CapProject] = "SaaS" and [CapTask] = "No" and [WorkCC] = "310", 
+            [TimeType] = "Project" and [CapProject] = "SaaS" and [CapTask] = "No" and [WorkCC] = "326", 
+            [TimeType] = "Project" and [CapProject] = "SaaS" and [CapTask] = "No" and [WorkCC] = "356", 
+            [TimeType] = "Project" and [CapProject] = "SaaS" and [CapTask] = "No" and [WorkCC] = "357", 
+            [TimeType] = "Project" and [CapProject] = "SaaS" and [CapTask] = "No" and [WorkCC] = "516", 
+            [TimeType] = "Project" and [CapProject] = "SaaS" and [CapTask] = "No" and [WorkCC] = "550",
+            [TimeType] = "Project" and [CapProject] = "SaaS" and [CapTask] = "No" and [WorkCC] = "198",
+            /* Contractor SaaS Expense */
+            [TimeType] = "Project" and [CapProject] = "SaaS" and [CapTask] = "No" and [WorkCC] = "316",
+
+            /* Cap */
+            [TimeType] = "Project" and [CapProject] = "Cap" and [CapTask] = "Yes" and [WorkCC] = "310", 
+            [TimeType] = "Project" and [CapProject] = "Cap" and [CapTask] = "Yes" and [WorkCC] = "326",
+            [TimeType] = "Project" and [CapProject] = "Cap" and [CapTask] = "Yes" and [WorkCC] = "356",
+            [TimeType] = "Project" and [CapProject] = "Cap" and [CapTask] = "Yes" and [WorkCC] = "357",
+            [TimeType] = "Project" and [CapProject] = "Cap" and [CapTask] = "Yes" and [WorkCC] = "516",
+            [TimeType] = "Project" and [CapProject] = "Cap" and [CapTask] = "Yes" and [WorkCC] = "550",
+            [TimeType] = "Project" and [CapProject] = "Cap" and [CapTask] = "Yes" and [WorkCC] = "198",
+            /* Contractor Cap */
+            [TimeType] = "Project" and [CapProject] = "Cap" and [CapTask] = "Yes" and [WorkCC] = "316",
+
+            /* Cap Expense */
+            [TimeType] = "Project" and [CapProject] = "Cap" and [CapTask] = "No" and [WorkCC] = "310", 
+            [TimeType] = "Project" and [CapProject] = "Cap" and [CapTask] = "No" and [WorkCC] = "326",
+            [TimeType] = "Project" and [CapProject] = "Cap" and [CapTask] = "No" and [WorkCC] = "356",
+            [TimeType] = "Project" and [CapProject] = "Cap" and [CapTask] = "No" and [WorkCC] = "357",
+            [TimeType] = "Project" and [CapProject] = "Cap" and [CapTask] = "No" and [WorkCC] = "516",
+            [TimeType] = "Project" and [CapProject] = "Cap" and [CapTask] = "No" and [WorkCC] = "550",
+            [TimeType] = "Project" and [CapProject] = "Cap" and [CapTask] = "No" and [WorkCC] = "198",
+            /* Contractor Cap Expense */
+            [TimeType] = "Project" and [CapProject] = "Cap" and [CapTask] = "No" and [WorkCC] = "316",
+
+            /* Project Expense */
+            [TimeType] = "Project" and [CapProject] = "No" and [WorkCC] = "310", 
+            [TimeType] = "Project" and [CapProject] = "No" and [WorkCC] = "326",
+            [TimeType] = "Project" and [CapProject] = "No" and [WorkCC] = "356",
+            [TimeType] = "Project" and [CapProject] = "No" and [WorkCC] = "357",
+            [TimeType] = "Project" and [CapProject] = "No" and [WorkCC] = "516",
+            [TimeType] = "Project" and [CapProject] = "No" and [WorkCC] = "550",
+            [TimeType] = "Project" and [CapProject] = "No" and [WorkCC] = "198",
+            /* Contractor Project Expense */
+            [TimeType] = "Project" and [CapProject] = "No" and [WorkCC] = "316",
+
+            /* Support */
+            ([TimeType] = "Product" or [TimeType] = "Cost Center" or [TimeType] = "Support") and [WorkCC] = "310", 
+            ([TimeType] = "Product" or [TimeType] = "Cost Center" or [TimeType] = "Support") and [WorkCC] = "326",
+            ([TimeType] = "Product" or [TimeType] = "Cost Center" or [TimeType] = "Support") and [WorkCC] = "356",
+            ([TimeType] = "Product" or [TimeType] = "Cost Center" or [TimeType] = "Support") and [WorkCC] = "357",
+            ([TimeType] = "Product" or [TimeType] = "Cost Center" or [TimeType] = "Support") and [WorkCC] = "516",
+            ([TimeType] = "Product" or [TimeType] = "Cost Center" or [TimeType] = "Support") and [WorkCC] = "550",
+            ([TimeType] = "Product" or [TimeType] = "Cost Center" or [TimeType] = "Support") and [WorkCC] = "198",
+            /* Contractor Support */
+            ([TimeType] = "Product" or [TimeType] = "Cost Center" or [TimeType] = "Support") and [WorkCC] = "316",
+            
+            /* VENDORS (GENERIC RESOURCES) */
+                /* Vendor Object Code logic depends on similar conditions as above, except it references the ResourceName instead of the WorkCC.
+                Vendors will not have a working cost center and are identified by either "Unassigned Resource" or "Generic Local Resource" */
+
+            /* SaaS Vendor */ 
+            [TimeType] = "Project" and [CapProject] = "SaaS" and [CapTask] = "Yes" and [ResourceName] = "Unassigned Resource",
+            [TimeType] = "Project" and [CapProject] = "SaaS" and [CapTask] = "Yes" and [ResourceName] = "Generic Local Resource",
+
+            /* SaaS Expense Vendor */
+            [TimeType] = "Project" and [CapProject] = "SaaS" and [CapTask] <> "Yes" and [ResourceName] = "Unassigned Resource",
+            [TimeType] = "Project" and [CapProject] = "SaaS" and [CapTask] <> "Yes" and [ResourceName] = "Generic Local Resource",
+
+            /* Cap Vendor */
+            [TimeType] = "Project" and [CapProject] = "Cap" and [CapTask] = "Yes" and [ResourceName] = "Unassigned Resource",
+            [TimeType] = "Project" and [CapProject] = "Cap" and [CapTask] = "Yes" and [ResourceName] = "Generic Local Resource",
+            
+            /* Cap Expense Vendor */
+            [TimeType] = "Project" and [CapProject] = "Cap" and [CapTask] <> "Yes" and [ResourceName] = "Unassigned Resource",
+            [TimeType] = "Project" and [CapProject] = "Cap" and [CapTask] <> "Yes" and [ResourceName] = "Generic Local Resource",
+
+            /* Project Expense Vendor */
+            [TimeType] = "Project" and [CapProject] = "No" and [ResourceName] = "Unassigned Resource",
+            [TimeType] = "Project" and [CapProject] = "No" and [ResourceName] = "Generic Local Resource"
+
+                },
+
+        /* -- RESULTS LIST STARTS HERE -- */        
+        Results = {
+
+        /* TIMESHEET USER RESOURCES */
+
+            /* SaaS */
+            InternalSaaS,
+            InternalSaaS,
+            InternalSaaS,
+            InternalSaaS,
+            InternalSaaS,
+            "Error SaaS",
+            InternalSaaS,
+            /* Contractor SaaS */
+            ContractorSaaS,
+
+            /* SaaS Expense */
+            InternalProjectExp,
+            InternalProjectExp,
+            "Error Exp.",
+            "Error Exp.",
+            DXExpense,
+            MediaSrvcsSupport,
+            "Error Exp.",
+            /* Contractor SaaS Expense */
+            ContractorProjectExp,
+
+            /* Cap */
+            InternalCap,
+            InternalCap,
+            InternalCap,
+            InternalCap,
+            InternalCap,
+            "Error Cap",
+            InternalCap,
+            /* Contractor Cap */
+            ContractorCap,
+
+            /* Cap Expense */
+            InternalProjectExp,
+            InternalProjectExp,
+            "Error Exp.",
+            "Error Exp.",
+            DXExpense,
+            MediaSrvcsSupport,
+            "Error Exp.",
+            /* Contractor Cap Expense */
+            ContractorProjectExp,
+            
+            /* Project Expense */
+            InternalProjectExp,
+            InternalProjectExp,
+            "Error Exp.",
+            "Error Exp.",
+            DXExpense,
+            MediaSrvcsSupport,
+            "Error Exp.",
+            /* Contractor Project Expense */
+            ContractorProjectExp,
+
+            /* Support */
+            InternalSupport,
+            InternalSupport,
+            "Error Supp.",
+            "Error Supp.",
+            DXExpense,
+            MediaSrvcsSupport,
+            "Error Supp.",
+            /* Contractor Support */
+            ContractorSupport,
+            
+        /* VENDORS (GENERIC RESOURCES) */
+
+            /* SaaS Vendor */
+            VendorSaaS,
+            VendorSaaS,
+
+            /* SaaS Expense Vendor */
+            VendorProjectExp,
+            VendorProjectExp,
+
+            /* Cap Vendor */
+            VendorCap,
+            VendorCap,
+
+            /* Cap Expense Vendor */
+            VendorProjectExp,
+            VendorProjectExp,
+
+            /* Project Expense Vendor */
+            VendorProjectExp,
+            VendorProjectExp
+        }
+    in
+
+    /* Take the result in the Results list that shares the same position based on the "True" position of the Conditions List if not an error */
+    try Results{List.PositionOf(Conditions, true)}
+    
+    /* Set to null if it is an error */
+    /* erros should be the result for Non-Billable hours, Admin hours, Etc.. */
+    otherwise null
+    )
